@@ -1,33 +1,53 @@
-
 from django.contrib import admin
-from .models import Course, Question, Choice, Submission
+from .models import (
+    Course,
+    Lesson,
+    Instructor,
+    Learner,
+    Question,
+    Choice,
+    Submission
+)
+
+class LessonInline(admin.TabularInline):
+    model = Lesson
+    extra = 1
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 2
 
-@admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('text', 'course', 'grade', 'allow_multiple', 'order')
-    list_filter = ('course', 'allow_multiple')
-    search_fields = ('text',)
-    inlines = [ChoiceInline]
-
 class QuestionInline(admin.TabularInline):
     model = Question
-    extra = 0
+    extra = 1
     show_change_link = True
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'published')
-    list_filter = ('published',)
-    search_fields = ('title',)
-    inlines = [QuestionInline]
+    list_display = ('name', 'description')
+    inlines = [LessonInline]
+
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'order')
+
+@admin.register(Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ('full_time', 'total_learners')
+
+@admin.register(Learner)
+class LearnerAdmin(admin.ModelAdmin):
+    list_display = ('occupation', 'social_link')
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('question_text', 'course')
+    inlines = [ChoiceInline]
+
+@admin.register(Choice)
+class ChoiceAdmin(admin.ModelAdmin):
+    list_display = ('choice_text', 'is_correct', 'question')
 
 @admin.register(Submission)
 class SubmissionAdmin(admin.ModelAdmin):
-    list_display = ('course', 'user', 'submitted_at', 'score', 'max_score', 'passed')
-    list_filter = ('course', 'passed')
-    search_fields = ('user__username', 'course__title')
-    filter_horizontal = ('selected_choices',)
+    list_display = ('enrollment', 'submitted_at')
