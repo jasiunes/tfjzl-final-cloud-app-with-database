@@ -1,54 +1,59 @@
-
+{% extends 'onlinecourse/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <title>{{ course.title }} – Prüfung</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    .question { margin: 1rem 0; padding: .8rem; border: 1px solid #ddd; border-radius: 6px; }
-    .choice { margin: .3rem 0; }
-    .meta { color: #666; font-size: .9rem; }
-    .submit { margin-top: 1rem; }
-  </style>
-</head>
-<body>
-  <h1>{{ course.title }}</h1>
-  {% if course.description %}<p class="meta">{{ course.description }}</p>{% endif %}
 
-  <form method="post" action="{% url 'exams:submit_exam' course.id %}">
-    {% csrf_token %}
+{% block content %}
+<div class="container mt-4">
 
-    {% for q in course.questions.all %}
-      <div class="question">
-        <div><strong>Frage {{ forloop.counter }}:</strong> {{ q.text }}</div>
-        <div class="meta">
-          Punkte: {{ q.grade }} ·
-          {% if q.allow_multiple %}Mehrfachauswahl erlaubt{% else %}Einzelauswahl{% endif %}
+    <!-- Course Header Section -->
+    <div class="jumbotron bg-primary text-white p-4 rounded">
+        <h1 class="display-4">{{ course.name }}</h1>
+        <p class="lead">{{ course.description }}</p>
+    </div>
+
+    <!-- Instructor Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>Instructor</h4>
         </div>
-        <div>
-          {% for c in q.choices.all %}
-            <label class="choice">
-              {% if q.allow_multiple %}
-                <input type="checkbox" name="choice_{{ q.id }}" value="{{ c.id }}">
-              {% else %}
-                <input type="radio" name="choice_{{ q.id }}" value="{{ c.id }}">
-              {% endif %}
-              {{ c.text }}
-            </label>
-          {% empty %}
-            <em>Keine Antwortmöglichkeiten definiert.</em>
-          {% endfor %}
+        <div class="card-body">
+            <h5>{{ course.instructor.first_name }} {{ course.instructor.last_name }}</h5>
+            <p>{{ course.instructor.bio }}</p>
         </div>
-      </div>
-    {% empty %}
-      <p>Für diesen Kurs sind noch keine Fragen vorhanden.</p>
-    {% endfor %}
+    </div>
 
-    {% if course.questions.count %}
-      <button class="submit" type="submit">Abgeben</button>
-    {% endif %}
-  </form>
-</body>
-</html>
+    <!-- Lessons Section -->
+    <h3 class="mt-4">Lessons</h3>
+    <div class="accordion" id="lessonsAccordion">
+
+        {% for lesson in lessons %}
+        <div class="card">
+            <div class="card-header" id="heading{{ lesson.id }}">
+                <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" 
+                            data-target="#collapse{{ lesson.id }}" 
+                            aria-expanded="true" aria-controls="collapse{{ lesson.id }}">
+                        {{ lesson.title }}
+                    </button>
+                </h2>
+            </div>
+
+            <div id="collapse{{ lesson.id }}" class="collapse" 
+                 aria-labelledby="heading{{ lesson.id }}" 
+                 data-parent="#lessonsAccordion">
+                <div class="card-body">
+                    <p>{{ lesson.content }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Exam Section -->
+    <div class="text-center mt-5">
+        <a href="{% url 'onlinecourse:take_exam' course.id %}" class="btn btn-success btn-lg">
+            Start Exam
+        </a>
+    </div>
+
+</div>
+{% endblock %}
