@@ -1,0 +1,53 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Ergebnis – {{ course.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .summary { margin: 1rem 0; padding: .8rem; background: #f8f8f8; border-radius: 6px; }
+    .question { margin: 1rem 0; padding: .8rem; border: 1px solid #eee; border-radius: 6px; }
+    .correct { color: #0a7f2e; }
+    .wrong { color: #b30000; }
+    .pill { display:inline-block; padding:.1rem .4rem; border-radius: 4px; font-size:.85rem; margin-left:.3rem; }
+    .pill-correct { background:#e6f5eb; color:#0a7f2e; border:1px solid #bfe6cc; }
+    .pill-picked { background:#eef2ff; color:#2436a2; border:1px solid #c7d0ff; }
+  </style>
+</head>
+<body>
+  <h1>Ergebnis – {{ course.title }}</h1>
+
+  <div class="summary">
+    <strong>Punkte:</strong> {{ submission.score }} / {{ submission.max_score }}
+    · <strong>Status:</strong> {% if submission.passed %}<span class="correct">Bestanden</span>{% else %}<span class="wrong">Nicht bestanden</span>{% endif %}
+    <div><small>Abgegeben am {{ submission.submitted_at }}</small></div>
+  </div>
+
+  {% for item in per_question %}
+    <div class="question">
+      <div>
+        <strong>Frage {{ forloop.counter }}:</strong> {{ item.question.text }}
+        {% if item.is_correct %}
+          <span class="pill pill-correct">korrekt (+{{ item.question.grade }})</span>
+        {% else %}
+          <span class="pill" style="background:#fff3cd; border:1px solid #ffe8a1; color:#7a5b00;">inkorrekt (+0)</span>
+        {% endif %}
+      </div>
+      <ul>
+        {% for c in item.choices %}
+          <li>
+            {% if c.id in item.correct_ids %}<strong>✔</strong>{% else %}&nbsp;&nbsp;{% endif %}
+            {{ c.text }}
+            {% if c.id in item.picked_ids %}<span class="pill pill-picked">deine Auswahl</span>{% endif %}
+            {% if c.id in item.correct_ids %}<span class="pill pill-correct">richtig</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+
+  <p><a href="javascript:history.back()">Zurück</a></p>
+</body>
+</html>

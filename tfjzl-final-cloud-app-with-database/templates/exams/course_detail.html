@@ -1,0 +1,54 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>{{ course.title }} – Prüfung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .question { margin: 1rem 0; padding: .8rem; border: 1px solid #ddd; border-radius: 6px; }
+    .choice { margin: .3rem 0; }
+    .meta { color: #666; font-size: .9rem; }
+    .submit { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>{{ course.title }}</h1>
+  {% if course.description %}<p class="meta">{{ course.description }}</p>{% endif %}
+
+  <form method="post" action="{% url 'exams:submit_exam' course.id %}">
+    {% csrf_token %}
+
+    {% for q in course.questions.all %}
+      <div class="question">
+        <div><strong>Frage {{ forloop.counter }}:</strong> {{ q.text }}</div>
+        <div class="meta">
+          Punkte: {{ q.grade }} ·
+          {% if q.allow_multiple %}Mehrfachauswahl erlaubt{% else %}Einzelauswahl{% endif %}
+        </div>
+        <div>
+          {% for c in q.choices.all %}
+            <label class="choice">
+              {% if q.allow_multiple %}
+                <input type="checkbox" name="choice_{{ q.id }}" value="{{ c.id }}">
+              {% else %}
+                <input type="radio" name="choice_{{ q.id }}" value="{{ c.id }}">
+              {% endif %}
+              {{ c.text }}
+            </label>
+          {% empty %}
+            <em>Keine Antwortmöglichkeiten definiert.</em>
+          {% endfor %}
+        </div>
+      </div>
+    {% empty %}
+      <p>Für diesen Kurs sind noch keine Fragen vorhanden.</p>
+    {% endfor %}
+
+    {% if course.questions.count %}
+      <button class="submit" type="submit">Abgeben</button>
+    {% endif %}
+  </form>
+</body>
+</html>
